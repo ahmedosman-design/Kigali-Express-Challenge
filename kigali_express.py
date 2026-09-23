@@ -35,20 +35,37 @@ def find_driver_linear(drivers, target_id):
 def find_driver_instant(driver_map, target_id):
     return driver_map.get(target_id)
 
+def verify_lookups_match(drivers, driver_map, target_id):
+    """Sanity check: both lookup methods must return the same driver
+    before we trust any speed comparison between them."""
+    linear_result = find_driver_linear(drivers, target_id)
+    instant_result = find_driver_instant(driver_map, target_id)
+    assert linear_result == instant_result, "Lookup methods disagree on result!"
+
+def benchmark_lookups(drivers, driver_map, target_id, runs=1000):
+    """Time both lookup approaches averaged over `runs` calls, verify
+    they agree, and return (linear_time, instant_time) in seconds."""
+    verify_lookups_match(drivers, driver_map, target_id)
+
+    start = time.perf_counter()
+    for _ in range(runs):
+        find_driver_linear(drivers, target_id)
+    linear_time = (time.perf_counter() - start) / runs
+
+    start = time.perf_counter()
+    for _ in range(runs):
+        find_driver_instant(driver_map, target_id)
+    instant_time = (time.perf_counter() - start) / runs
+
+    return linear_time, instant_time
+
 if __name__ == "__main__":
     drivers_list = generate_drivers(10000)
     save_drivers_to_json(drivers_list)
     driver_map = build_driver_map(drivers_list)
 
     target_id = "KGL-09999"
-
-    start = time.perf_counter()
-    find_driver_linear(drivers_list, target_id)
-    linear_time = time.perf_counter() - start
-
-    start = time.perf_counter()
-    find_driver_instant(driver_map, target_id)
-    instant_time = time.perf_counter() - start
+    linear_time, instant_time = benchmark_lookups(drivers_list, driver_map, target_id)
 
     print(f"Linear scan:  {linear_time*1e6:.2f} µs")
     print(f"Dict lookup:  {instant_time*1e6:.2f} µs")
