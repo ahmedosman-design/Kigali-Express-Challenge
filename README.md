@@ -16,3 +16,13 @@ We converted the raw list of driver objects into a dictionary keyed by `driver_i
 - `test.py` — measures and compares lookup speed between the two approaches
 
 ## Results
+## Results
+Averaged over 1,000 lookups against 10,000 drivers (worst case — last driver in the list):
+
+| Method              | Avg. time  |
+|---------------------|------------|
+| Linear scan (O(N))  | ~X µs      |
+| Dict lookup (O(1))  | ~Y µs      |
+| Speedup             | ~Zx faster |
+
+Run `python kigali_express.py` and swap in the actual printed numbers for X, Y, Z.
